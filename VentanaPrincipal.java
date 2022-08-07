@@ -6,49 +6,13 @@ public class VentanaPrincipal
 {
     static boolean login = false; //Declaración para ciclar el login de manera correcta.
     int total;
+    static int limite[] = new int[3]; //Limitador de transacciones dentro de una sola operacion.
 
-    public int ConsultaSaldo(int saldo)
-    {
-        JOptionPane.showMessageDialog(null, "Su saldo es: $" + saldo, "Consulta", JOptionPane.INFORMATION_MESSAGE);
-        
-        return saldo;
-    }
-    public int menuMostrarOpciones(String user, int opcion)
-    {
-        JOptionPane.showMessageDialog(null, "Bienvenido usuario: " + user, "Informacion", JOptionPane.INFORMATION_MESSAGE);
-        opcion = Integer.parseInt(JOptionPane.showInputDialog(null, "Seleccione una opcion para iniciar \n" 
-        + "1. Consulta de Saldo \n" 
-        + "2. Retiro o Deposito \n" 
-        + "3. Salir \n", "Menu", JOptionPane.INFORMATION_MESSAGE));
-
-        return opcion;
-    }
-    public int menuMostrarTransacciones(int opcion)
-    {
-        opcion = Integer.parseInt(JOptionPane.showInputDialog(null, "Seleccione una opcion \n" 
-        + "1. Retiro de Efectivo \n" 
-        + "2. Deposito de Efectivo"));
-
-        return opcion;
-    }
-    public int retiroSaldo(int monto)
-    {
-        monto = Integer.parseInt(JOptionPane.showInputDialog(null, "Digite la cantidad de dinero a retirar", "Retiro de Saldo", JOptionPane.INFORMATION_MESSAGE));
-
-        return monto;
-    }
-    public int depositoSaldo(int monto)
-    {
-        JOptionPane.showMessageDialog(null, "Digite el numero de cuenta a depositar", "Deposito de Saldo", JOptionPane.INFORMATION_MESSAGE);
-        monto = Integer.parseInt(JOptionPane.showInputDialog(null, "Digite la cantidad de dinero a depositar", "Deposito de Saldo", JOptionPane.INFORMATION_MESSAGE));
-
-        return monto;
-    }
 
     public static void main(String[] args)
     {
-        String user = "admin", password = "Password01"; //Variable de control de la contraseña.
-        String loginUser, loginPassword;
+        String user = "admin", password = "Password01"; //Variable de control del usuario y la contraseña correctos.
+        String loginUser, loginPassword; //Variables controladoras de las credenciales ingresadas.
         int total, saldo = 2836, opcion = 0, monto = 0; //Variables controladoras
         boolean reiniciar = true;
 
@@ -56,58 +20,78 @@ public class VentanaPrincipal
             {
                 JOptionPane.showMessageDialog(null, "Ingrese sus credenciales para acceder al cajero", "Informacion", JOptionPane.INFORMATION_MESSAGE);
 
-                while (!login)
+                while (!login) //Si el login es falso, el programa no continuará el flujo normal.
                 {
-                    VentanaPrincipal mostrarMenu = new VentanaPrincipal();
+                    Transacciones mostrarMenu = new Transacciones();
 
                     loginUser = JOptionPane.showInputDialog(null, "Ingrese su usuario", "Login", JOptionPane.INFORMATION_MESSAGE);
                     loginPassword = JOptionPane.showInputDialog(null, "Ingrese su contraseña", "Login", JOptionPane.INFORMATION_MESSAGE);
                 
-                    if (loginUser.equals(user) && (loginPassword.equals(password))) //Ejecución del menú donde se realiza toda la acción del programa.
+                    if (loginUser.equals(user) && (loginPassword.equals(password))) //Validación del usuario y contraseña, de lo contrario mostrará un error con credenciales incorrectas.
                     {
-                        login = true; //Variable cambia a verdadero wpara poder detener el ciclo infinito.
+                        login = true; //Variable cambia a verdadero para poder detener el ciclo infinito.
                         
                         do //Controlador del reinicio del ciclo para operar tantas veces sea necesario para el usuario.
                         {
-                            opcion = mostrarMenu.menuMostrarOpciones(user, opcion);
+                            opcion = mostrarMenu.menuMostrarOpciones(user, opcion); //Método con parámetros de usuario y la opción elegida en el mismo para juzgar hacia dónde irá el programa.
 
                             switch (opcion)
                             {
                                 case 1:
                                 {                            
-                                    VentanaPrincipal mostrarSaldo = new VentanaPrincipal();
+                                    Transacciones mostrarSaldo = new Transacciones();
 
-                                    saldo = mostrarSaldo.ConsultaSaldo(saldo);
+                                    saldo = mostrarSaldo.ConsultaSaldo(saldo); //Asignación del nuevo valor a la variable 'saldo'.
                                 }
                                 break;
 
                                 case 2:
                                 {
-                                    VentanaPrincipal menuTransacciones = new VentanaPrincipal();
+                                    Transacciones menuTransacciones = new Transacciones();
 
-                                    opcion = menuTransacciones.menuMostrarTransacciones(opcion);
+                                    opcion = menuTransacciones.menuMostrarTransacciones(opcion); //Asignación de valor a la variable 'opcion'.
 
-                                    switch (opcion) //Opciones internas para el retiro o deposito de saldo de usuario.
+                                    for (int i = 0; i < limite.length;) //Controlador del limite de transacciones que el usuario puede realizar antes de bloquearlas por seguridad.
                                     {
-                                        case 1: //Retiro de Saldo
+                                        limite[i]++; //Incremento del arreglo 'limite' que previene más transacciones de usuario, por seguridad.
+
+                                        switch (opcion) //Opciones internas para el retiro o deposito de saldo de usuario.
                                         {
-                                            VentanaPrincipal retirarSaldo = new VentanaPrincipal();
+                                            case 1: //Retiro de Saldo de la cuenta principal.
+                                            {
+                                                if (limite[i] >= 3)
+                                                {
+                                                    JOptionPane.showMessageDialog(null, "Limite de transacciones alcanzado.", "Alerta", JOptionPane.WARNING_MESSAGE);
+                                                }
+                                                else
+                                                {
+                                                    Transacciones retirarSaldo = new Transacciones();
 
-                                            monto = retirarSaldo.retiroSaldo(monto);
-                                            total = saldo - monto;
-                                            JOptionPane.showMessageDialog(null, "Su nuevo saldo es: $" + total, "Actualizacion", JOptionPane.INFORMATION_MESSAGE);
-                                            saldo = total;
-                                        }
-                                        break;
+                                                    monto = retirarSaldo.retiroSaldo(monto);
+                                                    total = saldo - monto;
+                                                    JOptionPane.showMessageDialog(null, "Su nuevo saldo es: $" + total, "Actualizacion", JOptionPane.INFORMATION_MESSAGE);
+                                                    saldo = total;
+                                                }
+                                            }
+                                            break;
 
-                                        case 2: //Deposito de Saldo
-                                        {
-                                            VentanaPrincipal depositarSaldo = new VentanaPrincipal();
-
-                                            monto = depositarSaldo.depositoSaldo(monto);
-                                            total = saldo - monto;
-                                            JOptionPane.showMessageDialog(null, "Su nuevo saldo es: $" + total, "Actualizacion", JOptionPane.INFORMATION_MESSAGE);
-                                            saldo = total;
+                                            case 2: //Deposito de Saldo a cuenta principal.
+                                            {
+                                                if (limite[i] >= 3)
+                                                {
+                                                    JOptionPane.showMessageDialog(null, "Limite de transacciones alcanzado.", "Alerta", JOptionPane.WARNING_MESSAGE);
+                                                }
+                                                else
+                                                {
+                                                    Transacciones depositarSaldo = new Transacciones();
+                                                
+                                                    monto = depositarSaldo.depositoSaldo(monto);
+                                                    total = saldo + monto;
+                                                    JOptionPane.showMessageDialog(null, "Su nuevo saldo es: $" + total, "Actualizacion", JOptionPane.INFORMATION_MESSAGE);
+                                                    saldo = total;
+                                                }
+                                            }
+                                            break;
                                         }
                                         break;
                                     }
@@ -117,7 +101,7 @@ public class VentanaPrincipal
                                 case 3:
                                 {
                                     JOptionPane.showMessageDialog(null, "Ha salido exitosamente.", "Salida", JOptionPane.INFORMATION_MESSAGE);
-                                    reiniciar = false;
+                                    reiniciar = false; //Cierre del reinicio del programa. No ejecutará una nueva ventana para reiniciar.
                                 }
                                 break;
 
@@ -135,7 +119,6 @@ public class VentanaPrincipal
                         login = false;
                     }
                 }
-
             }
             catch (Exception e)
             {
